@@ -3,43 +3,41 @@ package com.example.secureapi.security;
 import static com.example.secureapi.security.ApplicationUserPermission.STUDENT_WRITE;
 import static com.example.secureapi.security.ApplicationUserRole.ADMIN;
 import static com.example.secureapi.security.ApplicationUserRole.ADMIN_TRAINEE;
-import static com.example.secureapi.security.ApplicationUserRole.STUDENT;
 
+import com.example.secureapi.jwt.JwtAuthFilter;
 import com.example.secureapi.jwt.JwtConfig;
 import com.example.secureapi.jwt.JwtSecret;
-import com.example.secureapi.jwt.JwtAuthFilter;
 import com.example.secureapi.jwt.JwtVerifier;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
 @EnableWebSecurity
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private final PasswordEncoder passwordEncoder;
 	private final JwtConfig jwtConfig;
 	private final JwtSecret jwtSecret;
+	private final UserDetailsService userDetailsService;
 
 	@Autowired
 	public ApplicationSecurityConfig(
-			PasswordEncoder passwordEncoder,
+			// PasswordEncoder passwordEncoder,
+			UserDetailsService userDetailsService,
 			JwtConfig jwtConfig,
 			JwtSecret jwtSecret
 	)
 	{
-		this.passwordEncoder = passwordEncoder;
+		this.userDetailsService = userDetailsService;
+		// this.passwordEncoder = passwordEncoder;
 		this.jwtConfig = jwtConfig;
 		this.jwtSecret = jwtSecret;
 	}
@@ -57,8 +55,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 				.authorizeRequests()
 				.antMatchers("/", "/login", "/css/*", "/js/*")
 				.permitAll() // anyone can access
-				// .antMatchers("/api/**") // users with role
-				// .hasRole(ADMIN.name()) // ADMIN
+				.antMatchers("/api/**") // users with role
+				.hasRole(ADMIN.name()) // ADMIN
 				.antMatchers(HttpMethod.POST, "/api/**")
 				.hasAuthority(STUDENT_WRITE.name())
 				.antMatchers(HttpMethod.DELETE, "/api/**")
@@ -76,33 +74,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Override
-	@Bean
-	protected UserDetailsService userDetailsService() {
-		UserDetails nouri =
-				User.builder()
-						.username("nouri")
-						.password(passwordEncoder.encode("0000"))
-						// .roles(STUDENT.name()) // ROLE_STUDENT
-						.authorities(STUDENT.getGrantedAuthorities())
-						.build();
-		UserDetails admin =
-				User.builder()
-						.username("admin")
-						.password(passwordEncoder.encode("0000"))
-						// .roles(ADMIN.name()) // ROLE_ADMIN
-						.authorities(ADMIN.getGrantedAuthorities()) // Permissions instead of roles
-						.build();
-		UserDetails adminTrainee =
-				User.builder()
-						.username("tom")
-						.password(passwordEncoder.encode("0000"))
-						// .roles(ADMIN_TRAINEE.name()) // ROLE_ADMIN_TRAINEE
-						.authorities(ADMIN_TRAINEE.getGrantedAuthorities())
-						.build();
-		// also must add password encoder
-
-		return new InMemoryUserDetailsManager(nouri, admin, adminTrainee);
-
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(userDetailsService);
 	}
 
 }

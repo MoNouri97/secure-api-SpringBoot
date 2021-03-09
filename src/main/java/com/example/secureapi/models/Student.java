@@ -1,4 +1,4 @@
-package com.example.secureapi.student;
+package com.example.secureapi.models;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -11,7 +11,9 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.example.secureapi.security.ApplicationUserRole;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table
@@ -22,8 +24,10 @@ public class Student {
 	private Long id;
 
 	private String name;
-
+	@JsonIgnore
+	private String password;
 	private String email;
+	private ApplicationUserRole role;
 
 	@JsonFormat(pattern = "dd/MM/yyyy")
 	private LocalDate dob;
@@ -31,20 +35,49 @@ public class Student {
 	@Transient
 	private int age;
 
-	public Student(Long id, String name, String email, LocalDate dob) {
+	public Student() {
+	}
+
+	public Student(
+			Long id,
+			String name,
+			String password,
+			String email,
+			ApplicationUserRole role,
+			LocalDate dob
+	)
+	{
 		this.id = id;
 		this.name = name;
+		this.password = password;
 		this.email = email;
+		this.role = role;
 		this.dob = dob;
 	}
 
-	public Student(String name, String email, LocalDate dob) {
+	public Student(
+			String name,
+			String password,
+			String email,
+			ApplicationUserRole role,
+			LocalDate dob
+
+	)
+	{
 		this.name = name;
+		this.password = password;
 		this.email = email;
+		this.role = role;
 		this.dob = dob;
 	}
 
-	public Student() {
+	// #region getters , setters , toString
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public Long getId() {
@@ -87,9 +120,28 @@ public class Student {
 		this.age = age;
 	}
 
+	public ApplicationUserRole getRole() {
+		return role;
+	}
+
+	public void setRole(ApplicationUserRole role) {
+		this.role = role;
+	}
+
 	@Override
 	public String toString() {
-		return "Student [age=" + age + ", dob=" + dob + ", email=" + email + ", id=" + id + ", name=" + name + "]";
+		return "Student [age="
+				+ age
+				+ ", dob="
+				+ dob
+				+ ", email="
+				+ email
+				+ ", id="
+				+ id
+				+ ", name="
+				+ name
+				+ "]";
 	}
+	// #endregion
 
 }

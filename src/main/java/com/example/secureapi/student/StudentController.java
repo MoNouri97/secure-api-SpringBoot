@@ -2,6 +2,8 @@ package com.example.secureapi.student;
 
 import java.util.List;
 
+import com.example.secureapi.models.Student;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,11 +51,8 @@ public class StudentController {
 			@PathVariable("studentId") Long id,
 			@RequestParam(required = false) String name,
 			@RequestParam(required = false) String email
-	) {
-		studentService.updateStudent(
-				id,
-				name,
-				email
-		);
+	)
+	{
+		studentService.updateStudent(id, name, email);
 	}
 }
