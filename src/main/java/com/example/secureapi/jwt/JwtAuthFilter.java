@@ -10,9 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.example.secureapi.models.AuthRequest;
 import com.example.secureapi.models.AuthResponse;
+import com.example.secureapi.models.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -83,6 +85,19 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
 		AuthResponse authResponse = new AuthResponse(authHeader, authResult.getName());
 
 		new ObjectMapper().writeValue(response.getWriter(), authResponse);
+	}
+
+	@Override
+	protected void unsuccessfulAuthentication(
+			HttpServletRequest request,
+			HttpServletResponse response,
+			AuthenticationException failed
+	) throws IOException,
+			ServletException
+	{
+		ErrorResponse errorResponse = new ErrorResponse(failed.getMessage(), HttpStatus.UNAUTHORIZED);
+		response.setStatus(errorResponse.getCode().value());
+		new ObjectMapper().writeValue(response.getWriter(), errorResponse);
 	}
 
 }
